@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,14 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// Custom colors for our application
+				iitb: {
+					primary: '#1e6091',   // Deep blue
+					secondary: '#4caf50', // Green
+					accent: '#81c784',    // Light green
+					light: '#e8f5e9',     // Very light green
+					dark: '#1b5e20',      // Dark green
 				}
 			},
 			borderRadius: {
