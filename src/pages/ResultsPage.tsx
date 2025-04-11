@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEmission } from "@/context/EmissionContext";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Leaf, Award, Car, Tree } from "lucide-react";
+import { Leaf, Award, Car, TreeDeciduous } from "lucide-react";
 
 const ResultsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -235,7 +235,7 @@ const ResultsPage: React.FC = () => {
             </div>
             
             <div className="flex items-center p-4 bg-green-50 rounded-lg">
-              <Tree className="h-12 w-12 text-green-600 mr-4" />
+              <TreeDeciduous className="h-12 w-12 text-green-600 mr-4" />
               <div>
                 <h3 className="text-xl font-semibold">Carbon Absorption</h3>
                 <p className="text-gray-700">
