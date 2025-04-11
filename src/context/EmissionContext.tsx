@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 
 // Define types for our emission data
@@ -329,52 +328,89 @@ export const EmissionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }));
   };
 
-  // Calculate emissions (this is a simplified calculation - would need real emission factors)
+  // Calculate emissions using the provided emission factors
   const calculateTotalEmission = (): number => {
-    // Transportation emission (simplified calculation)
-    const transportationEmission = 
-      Object.values(emissionFactors.transportation.road).reduce((sum, val) => sum + val * 0.2, 0) +
-      Object.values(emissionFactors.transportation.track).reduce((sum, val) => sum + val * 0.1, 0) +
-      Object.values(emissionFactors.transportation.carpooling).reduce((sum, val) => sum + val * 0.05, 0);
+    // Transportation emission calculation
+    const transportationRoadEmissions = 
+      (emissionFactors.transportation.road.threewheelerCNG || 0) * 0.107 +
+      (emissionFactors.transportation.road.twoWheelerScooter || 0) * 0.142 +
+      (emissionFactors.transportation.road.fourWheelerDiesel || 0) * 0.221 +
+      (emissionFactors.transportation.road.fourWheelerPetrol || 0) * 0.142 +
+      (emissionFactors.transportation.road.fourWheelerCNG || 0) * 0.1 +
+      (emissionFactors.transportation.road.fourWheelerEV || 0) * 0 +
+      (emissionFactors.transportation.road.twoWheelerEV || 0) * 0 +
+      (emissionFactors.transportation.road.intraCityBus || 0) * 0.015161;
+
+    const transportationTrackEmissions = 
+      (emissionFactors.transportation.track.localTrain || 0) * 0.007976 +
+      (emissionFactors.transportation.track.longDistance || 0) * 0.007837 +
+      (emissionFactors.transportation.track.metro || 0) * 0.007976 +
+      (emissionFactors.transportation.track.airplane || 0) * 0.246;
+
+    const transportationCarpoolingEmissions = 
+      (emissionFactors.transportation.carpooling.sharedAuto || 0) * 0.107 +
+      (emissionFactors.transportation.carpooling.fourWheelerPetrol || 0) * 0.142 +
+      (emissionFactors.transportation.carpooling.fourWheelerCNG || 0) * 0.1;
+
+    const transportationEmission = transportationRoadEmissions + transportationTrackEmissions + transportationCarpoolingEmissions;
 
     // HVAC emission
-    const hvacEmission = emissionFactors.hvac.durationHours * 
-      (emissionFactors.hvac.venue === "Convocation hall" ? 10 : 
-       emissionFactors.hvac.venue === "FC Kohli" ? 8 : 5) * 
-      (1 + emissionFactors.hvac.extraCapacity / 100);
+    let hvacFactor = 12; // Default
+    if (emissionFactors.hvac.venue === "Convocation hall") hvacFactor = 20.4;
+    else if (emissionFactors.hvac.venue === "LT PCSA") hvacFactor = 20.4;
+    else if (emissionFactors.hvac.venue === "FC Kohli") hvacFactor = 10;
+    else if (emissionFactors.hvac.venue === "LH") hvacFactor = 12;
+    else if (emissionFactors.hvac.venue === "LC") hvacFactor = 12;
+
+    const hvacEmission = (emissionFactors.hvac.durationHours || 0) * hvacFactor * 
+      (1 + (emissionFactors.hvac.extraCapacity || 0) / 100);
 
     // Electricity emission
-    const electricityEmission = emissionFactors.electricity.durationHours * 
-      (emissionFactors.electricity.venue === "Convocation hall" ? 15 : 
-       emissionFactors.electricity.venue === "FC Kohli" ? 12 : 7) * 
-      (1 + emissionFactors.electricity.extraCapacity / 100);
+    let electricityFactor = 6; // Default
+    if (emissionFactors.electricity.venue === "Convocation hall") electricityFactor = 10;
+    else if (emissionFactors.electricity.venue === "LT PCSA") electricityFactor = 10;
+    else if (emissionFactors.electricity.venue === "FC Kohli") electricityFactor = 15;
+    else if (emissionFactors.electricity.venue === "LH") electricityFactor = 6;
+    else if (emissionFactors.electricity.venue === "LC") electricityFactor = 6;
+
+    const electricityEmission = (emissionFactors.electricity.durationHours || 0) * electricityFactor * 
+      (1 + (emissionFactors.electricity.extraCapacity || 0) / 100);
 
     // Materials emission
     const materialsEmission = 
-      emissionFactors.materials.trophies * 5 +
-      emissionFactors.materials.momentoes * 3 +
-      emissionFactors.materials.banners * 7 +
-      emissionFactors.materials.bottledWater * 0.5 +
-      emissionFactors.materials.kits * 2 +
-      emissionFactors.materials.premiumKits * 4 +
-      emissionFactors.materials.transportation * 1 +
-      emissionFactors.materials.printing * 0.1 +
-      emissionFactors.materials.merchandise * 3;
+      // Trophies (using medium size as default)
+      (emissionFactors.materials.trophies || 0) * 3.58 * 1.1 +
+      // Momentoes (using polystyrene as default)
+      (emissionFactors.materials.momentoes || 0) * 3.076 * 0.7 +
+      // Banners
+      (emissionFactors.materials.banners || 0) * 0.278 * 5.17 +
+      // Bottled water
+      (emissionFactors.materials.bottledWater || 0) * 0.2135 +
+      // Kits
+      (emissionFactors.materials.kits || 0) * 0.02 +
+      // Premium kits
+      (emissionFactors.materials.premiumKits || 0) * 0.58 +
+      // Transportation (using generic factor)
+      (emissionFactors.materials.transportation || 0) * 0.15 +
+      // Printing
+      (emissionFactors.materials.printing || 0) * 0.005 +
+      // Merchandise (using cotton t-shirt as default)
+      (emissionFactors.materials.merchandise || 0) * 2.5 * 0.18;
 
     // Food emission
     const foodEmission = 
-      emissionFactors.food.vegOptions * 1.5 +
-      emissionFactors.food.nonVegOptions * 3.5;
+      (emissionFactors.food.vegOptions || 0) * 0.4 +
+      (emissionFactors.food.nonVegOptions || 0) * 0.8;
 
     // Water emission
-    const waterEmission = emissionFactors.water.literUsed * 0.001;
+    const waterEmission = (emissionFactors.water.literUsed || 0) * 0.0001;
 
     // Food waste emission
-    const foodWasteEmission = emissionFactors.foodWaste.kgWasted * 2.5;
+    const foodWasteEmission = (emissionFactors.foodWaste.kgWasted || 0) * 0.25;
 
     // Accommodation emission
-    const accommodationEmission = emissionFactors.accommodation.peopleCount * 
-                                  emissionFactors.accommodation.nightsPerRoom * 5;
+    const accommodationEmission = (emissionFactors.accommodation.peopleCount || 0) * 
+                                 (emissionFactors.accommodation.nightsPerRoom || 0) * 20;
 
     // Total emission
     return (
@@ -389,51 +425,89 @@ export const EmissionProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     );
   };
 
-  // Get emission breakdown by category
+  // Get emission breakdown by category - Updated with correct emission factors
   const getEmissionBreakdown = () => {
-    const transportationEmission = 
-    Object.values(emissionFactors.transportation.road).reduce((sum, val) => sum + val * 0.2, 0) +
-    Object.values(emissionFactors.transportation.track).reduce((sum, val) => sum + val * 0.1, 0) +
-    Object.values(emissionFactors.transportation.carpooling).reduce((sum, val) => sum + val * 0.05, 0);
+    // Transportation emission calculation
+    const transportationRoadEmissions = 
+      (emissionFactors.transportation.road.threewheelerCNG || 0) * 0.107 +
+      (emissionFactors.transportation.road.twoWheelerScooter || 0) * 0.142 +
+      (emissionFactors.transportation.road.fourWheelerDiesel || 0) * 0.221 +
+      (emissionFactors.transportation.road.fourWheelerPetrol || 0) * 0.142 +
+      (emissionFactors.transportation.road.fourWheelerCNG || 0) * 0.1 +
+      (emissionFactors.transportation.road.fourWheelerEV || 0) * 0 +
+      (emissionFactors.transportation.road.twoWheelerEV || 0) * 0 +
+      (emissionFactors.transportation.road.intraCityBus || 0) * 0.015161;
+
+    const transportationTrackEmissions = 
+      (emissionFactors.transportation.track.localTrain || 0) * 0.007976 +
+      (emissionFactors.transportation.track.longDistance || 0) * 0.007837 +
+      (emissionFactors.transportation.track.metro || 0) * 0.007976 +
+      (emissionFactors.transportation.track.airplane || 0) * 0.246;
+
+    const transportationCarpoolingEmissions = 
+      (emissionFactors.transportation.carpooling.sharedAuto || 0) * 0.107 +
+      (emissionFactors.transportation.carpooling.fourWheelerPetrol || 0) * 0.142 +
+      (emissionFactors.transportation.carpooling.fourWheelerCNG || 0) * 0.1;
+
+    const transportationEmission = transportationRoadEmissions + transportationTrackEmissions + transportationCarpoolingEmissions;
 
     // HVAC emission
-    const hvacEmission = emissionFactors.hvac.durationHours * 
-      (emissionFactors.hvac.venue === "Convocation hall" ? 10 : 
-       emissionFactors.hvac.venue === "FC Kohli" ? 8 : 5) * 
-      (1 + emissionFactors.hvac.extraCapacity / 100);
+    let hvacFactor = 12; // Default
+    if (emissionFactors.hvac.venue === "Convocation hall") hvacFactor = 20.4;
+    else if (emissionFactors.hvac.venue === "LT PCSA") hvacFactor = 20.4;
+    else if (emissionFactors.hvac.venue === "FC Kohli") hvacFactor = 10;
+    else if (emissionFactors.hvac.venue === "LH") hvacFactor = 12;
+    else if (emissionFactors.hvac.venue === "LC") hvacFactor = 12;
+
+    const hvacEmission = (emissionFactors.hvac.durationHours || 0) * hvacFactor * 
+      (1 + (emissionFactors.hvac.extraCapacity || 0) / 100);
 
     // Electricity emission
-    const electricityEmission = emissionFactors.electricity.durationHours * 
-      (emissionFactors.electricity.venue === "Convocation hall" ? 15 : 
-       emissionFactors.electricity.venue === "FC Kohli" ? 12 : 7) * 
-      (1 + emissionFactors.electricity.extraCapacity / 100);
+    let electricityFactor = 6; // Default
+    if (emissionFactors.electricity.venue === "Convocation hall") electricityFactor = 10;
+    else if (emissionFactors.electricity.venue === "LT PCSA") electricityFactor = 10;
+    else if (emissionFactors.electricity.venue === "FC Kohli") electricityFactor = 15;
+    else if (emissionFactors.electricity.venue === "LH") electricityFactor = 6;
+    else if (emissionFactors.electricity.venue === "LC") electricityFactor = 6;
+
+    const electricityEmission = (emissionFactors.electricity.durationHours || 0) * electricityFactor * 
+      (1 + (emissionFactors.electricity.extraCapacity || 0) / 100);
 
     // Materials emission
     const materialsEmission = 
-      emissionFactors.materials.trophies * 5 +
-      emissionFactors.materials.momentoes * 3 +
-      emissionFactors.materials.banners * 7 +
-      emissionFactors.materials.bottledWater * 0.5 +
-      emissionFactors.materials.kits * 2 +
-      emissionFactors.materials.premiumKits * 4 +
-      emissionFactors.materials.transportation * 1 +
-      emissionFactors.materials.printing * 0.1 +
-      emissionFactors.materials.merchandise * 3;
+      // Trophies (using medium size as default)
+      (emissionFactors.materials.trophies || 0) * 3.58 * 1.1 +
+      // Momentoes (using polystyrene as default)
+      (emissionFactors.materials.momentoes || 0) * 3.076 * 0.7 +
+      // Banners
+      (emissionFactors.materials.banners || 0) * 0.278 * 5.17 +
+      // Bottled water
+      (emissionFactors.materials.bottledWater || 0) * 0.2135 +
+      // Kits
+      (emissionFactors.materials.kits || 0) * 0.02 +
+      // Premium kits
+      (emissionFactors.materials.premiumKits || 0) * 0.58 +
+      // Transportation (using generic factor)
+      (emissionFactors.materials.transportation || 0) * 0.15 +
+      // Printing
+      (emissionFactors.materials.printing || 0) * 0.005 +
+      // Merchandise (using cotton t-shirt as default)
+      (emissionFactors.materials.merchandise || 0) * 2.5 * 0.18;
 
     // Food emission
     const foodEmission = 
-      emissionFactors.food.vegOptions * 1.5 +
-      emissionFactors.food.nonVegOptions * 3.5;
+      (emissionFactors.food.vegOptions || 0) * 0.4 +
+      (emissionFactors.food.nonVegOptions || 0) * 0.8;
 
     // Water emission
-    const waterEmission = emissionFactors.water.literUsed * 0.001;
+    const waterEmission = (emissionFactors.water.literUsed || 0) * 0.0001;
 
     // Food waste emission
-    const foodWasteEmission = emissionFactors.foodWaste.kgWasted * 2.5;
+    const foodWasteEmission = (emissionFactors.foodWaste.kgWasted || 0) * 0.25;
 
     // Accommodation emission
-    const accommodationEmission = emissionFactors.accommodation.peopleCount * 
-                                emissionFactors.accommodation.nightsPerRoom * 5;
+    const accommodationEmission = (emissionFactors.accommodation.peopleCount || 0) * 
+                                 (emissionFactors.accommodation.nightsPerRoom || 0) * 20;
 
     return {
       transportation: transportationEmission,

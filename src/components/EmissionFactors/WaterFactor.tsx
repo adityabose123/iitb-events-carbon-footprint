@@ -24,6 +24,9 @@ const WaterFactor: React.FC = () => {
             value={water.literUsed || ''}
             onChange={(e) => updateWater({ literUsed: parseFloat(e.target.value) || 0 })}
           />
+          <p className="text-xs text-gray-500">
+            Water emissions are calculated at 0.0001 kg CO₂e per liter due to treatment and pumping energy
+          </p>
         </div>
       </CardContent>
     </Card>
