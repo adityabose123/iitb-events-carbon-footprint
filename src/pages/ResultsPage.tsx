@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEmission } from "@/context/EmissionContext";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Leaf, Award } from "lucide-react";
+import { Leaf, Award, Car, Tree } from "lucide-react";
 
 const ResultsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -76,8 +76,6 @@ const ResultsPage: React.FC = () => {
       (emissionFactors.materials.kits || 0) * 0.02 +
       // Premium kits
       (emissionFactors.materials.premiumKits || 0) * 0.58 +
-      // Transportation (using generic factor)
-      (emissionFactors.materials.transportation || 0) * 0.15 +
       // Printing
       (emissionFactors.materials.printing || 0) * 0.005 +
       // Merchandise (using cotton t-shirt as default)
@@ -87,9 +85,6 @@ const ResultsPage: React.FC = () => {
     const foodEmission = 
       (emissionFactors.food.vegOptions || 0) * 0.4 +
       (emissionFactors.food.nonVegOptions || 0) * 0.8;
-
-    // Water emission - minimal environmental impact compared to others
-    const waterEmission = (emissionFactors.water.literUsed || 0) * 0.0001;
 
     // Food waste emission
     const foodWasteEmission = (emissionFactors.foodWaste.kgWasted || 0) * 0.25;
@@ -104,7 +99,6 @@ const ResultsPage: React.FC = () => {
       { name: "Electricity", value: electricityEmission },
       { name: "Materials", value: materialsEmission },
       { name: "Food", value: foodEmission },
-      { name: "Water", value: waterEmission },
       { name: "Food Waste", value: foodWasteEmission },
       { name: "Accommodation", value: accommodationEmission }
     ].filter(item => item.value > 0);
@@ -112,8 +106,26 @@ const ResultsPage: React.FC = () => {
 
   const chartData = getChartData();
 
-  // Colors for pie chart
-  const COLORS = ['#1e6091', '#4caf50', '#81c784', '#e8f5e9', '#1b5e20', '#00796b', '#4db6ac', '#b2dfdb'];
+  // Calculate equivalent emissions impact
+  const calculateEmissionImpact = () => {
+    // Driving impact: Average car emits ~0.2 kg CO2 per km
+    const drivingKm = Math.round(totalEmission / 0.2);
+    
+    // Tree absorption impact: Average tree absorbs ~20kg CO2 per year (~0.055 kg per day)
+    const treeDays = Math.round(totalEmission / 0.055);
+    const treeCount = Math.ceil(treeDays / 30); // How many trees needed for a month
+
+    return {
+      drivingKm,
+      treeDays,
+      treeCount
+    };
+  };
+
+  const emissionImpact = calculateEmissionImpact();
+
+  // Colors for pie chart - using a more distinguishable color palette
+  const COLORS = ['#1e88e5', '#43a047', '#ffb300', '#e53935', '#5e35b1', '#00acc1', '#f4511e', '#6d4c41'];
 
   // Save event data when viewing results
   useEffect(() => {
@@ -150,25 +162,27 @@ const ResultsPage: React.FC = () => {
             <CardTitle>Emission Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-96">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={chartData}
                     cx="50%"
                     cy="50%"
-                    labelLine={true}
-                    outerRadius={80}
+                    labelLine={false}
+                    outerRadius={100}
                     fill="#8884d8"
                     dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => 
+                      percent > 0.05 ? `${name}: ${(percent * 100).toFixed(0)}%` : ""
+                    }
                   >
                     {chartData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip formatter={(value: number) => `${value.toFixed(2)} kg CO₂e`} />
-                  <Legend />
+                  <Legend layout="vertical" verticalAlign="middle" align="right" />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -180,20 +194,21 @@ const ResultsPage: React.FC = () => {
             <CardTitle>Emission by Category</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-80">
+            <div className="h-96">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart
                   data={chartData}
+                  layout="vertical"
                   margin={{
                     top: 5,
                     right: 30,
-                    left: 20,
+                    left: 80,
                     bottom: 5,
                   }}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="name" />
-                  <YAxis />
+                  <XAxis type="number" />
+                  <YAxis type="category" dataKey="name" />
                   <Tooltip formatter={(value: number) => `${value.toFixed(2)} kg CO₂e`} />
                   <Bar dataKey="value" fill="#1e6091" />
                 </BarChart>
@@ -202,6 +217,35 @@ const ResultsPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="shadow-md bg-white">
+        <CardHeader>
+          <CardTitle>Environmental Impact Equivalents</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-center p-4 bg-blue-50 rounded-lg">
+              <Car className="h-12 w-12 text-blue-600 mr-4" />
+              <div>
+                <h3 className="text-xl font-semibold">Driving Equivalent</h3>
+                <p className="text-gray-700">
+                  These emissions are equivalent to driving a car for <span className="font-bold">{emissionImpact.drivingKm} kilometers</span>
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center p-4 bg-green-50 rounded-lg">
+              <Tree className="h-12 w-12 text-green-600 mr-4" />
+              <div>
+                <h3 className="text-xl font-semibold">Carbon Absorption</h3>
+                <p className="text-gray-700">
+                  It would take <span className="font-bold">{emissionImpact.treeCount} trees</span> about a month to absorb this much carbon
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="flex justify-between">
         <Button 

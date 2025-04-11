@@ -31,6 +31,9 @@ const MaterialsFactor: React.FC = () => {
               value={materials.trophies || ''}
               onChange={(e) => handleChange('trophies', e.target.value)}
             />
+            <p className="text-xs text-gray-500">
+              Trophies are considered medium size, put two in the box if trophy size is big
+            </p>
           </div>
           
           <div className="space-y-2">
@@ -42,6 +45,9 @@ const MaterialsFactor: React.FC = () => {
               value={materials.momentoes || ''}
               onChange={(e) => handleChange('momentoes', e.target.value)}
             />
+            <p className="text-xs text-gray-500">
+              Standard size Momento Plaque
+            </p>
           </div>
           
           <div className="space-y-2">
@@ -53,6 +59,9 @@ const MaterialsFactor: React.FC = () => {
               value={materials.banners || ''}
               onChange={(e) => handleChange('banners', e.target.value)}
             />
+            <p className="text-xs text-gray-500">
+              2*2 foot standard, adjust accordingly
+            </p>
           </div>
           
           <div className="space-y-2">
@@ -89,17 +98,6 @@ const MaterialsFactor: React.FC = () => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="transportation">Transportation (quantity)</Label>
-            <Input
-              id="transportation"
-              type="number"
-              min="0"
-              value={materials.transportation || ''}
-              onChange={(e) => handleChange('transportation', e.target.value)}
-            />
-          </div>
-          
-          <div className="space-y-2">
             <Label htmlFor="printing">Printing (A4 sheet quantity)</Label>
             <Input
               id="printing"
@@ -119,6 +117,9 @@ const MaterialsFactor: React.FC = () => {
               value={materials.merchandise || ''}
               onChange={(e) => handleChange('merchandise', e.target.value)}
             />
+            <p className="text-xs text-gray-500">
+              Merchandise is any plastic goodies such as Badges/Pins/ID Cards/Bookmarks
+            </p>
           </div>
         </div>
       </CardContent>

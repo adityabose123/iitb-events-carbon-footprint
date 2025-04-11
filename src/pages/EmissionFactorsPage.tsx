@@ -38,9 +38,9 @@ const EmissionFactorsPage: React.FC = () => {
         <ElectricityFactor />
         <MaterialsFactor />
         <FoodFactor />
-        <WaterFactor />
         <FoodWasteFactor />
         <AccommodationFactor />
+        <WaterFactor />
 
         <div className="flex justify-end space-x-4">
           <Button 
