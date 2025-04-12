@@ -18,13 +18,13 @@ const EmissionDistributionChart: React.FC<EmissionDistributionChartProps> = ({ c
   return (
     <div className="h-96">
       <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
+        <PieChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
           <Pie
             data={chartData}
             cx="50%"
-            cy="50%"
+            cy="45%"
             labelLine={true}
-            outerRadius={100}
+            outerRadius={80}
             fill="#8884d8"
             dataKey="value"
             label={({ name, percent }) => 
@@ -36,7 +36,12 @@ const EmissionDistributionChart: React.FC<EmissionDistributionChartProps> = ({ c
             ))}
           </Pie>
           <Tooltip formatter={(value: number) => `${value.toFixed(2)} kg CO₂e`} />
-          <Legend layout="vertical" verticalAlign="middle" align="right" />
+          <Legend 
+            layout="vertical" 
+            verticalAlign="middle" 
+            align="right" 
+            wrapperStyle={{ paddingLeft: 20 }}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>

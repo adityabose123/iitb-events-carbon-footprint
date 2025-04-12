@@ -21,13 +21,21 @@ const EmissionCategoryChart: React.FC<EmissionCategoryChartProps> = ({ chartData
           margin={{
             top: 5,
             right: 30,
-            left: 80,
+            left: 100, // Increased left margin to accommodate longer category names
             bottom: 5,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" />
-          <YAxis type="category" dataKey="name" />
+          <XAxis 
+            type="number" 
+            tick={{ fontSize: 12 }}
+          />
+          <YAxis 
+            type="category" 
+            dataKey="name" 
+            tick={{ fontSize: 12 }}
+            width={90} // Fixed width for the Y-axis
+          />
           <Tooltip formatter={(value: number) => `${value.toFixed(2)} kg CO₂e`} />
           <Bar dataKey="value" fill="#1e6091" />
         </BarChart>

@@ -1,12 +1,6 @@
 
 import React from "react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { 
-  ChartContainer, 
-  ChartTooltip, 
-  ChartTooltipContent,
-  ChartLegend
-} from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 interface ComparisonData {
   category: string;
@@ -21,10 +15,7 @@ interface EmissionComparisonChartProps {
 const EmissionComparisonChart: React.FC<EmissionComparisonChartProps> = ({ comparisonData }) => {
   return (
     <div className="h-96">
-      <ChartContainer config={{
-        "Your Event": { color: "#1e6091" },
-        "Average": { color: "#43a047" }
-      }}>
+      <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={comparisonData}
           margin={{
@@ -35,16 +26,29 @@ const EmissionComparisonChart: React.FC<EmissionComparisonChartProps> = ({ compa
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="category" />
-          <YAxis label={{ value: 'Emissions (kg CO₂e)', angle: -90, position: 'insideLeft' }} />
-          <ChartTooltip>
-            <ChartTooltipContent />
-          </ChartTooltip>
-          <ChartLegend />
-          <Bar dataKey="Your Event" fill="var(--color-Your Event)" />
-          <Bar dataKey="Average" fill="var(--color-Average)" />
+          <XAxis 
+            dataKey="category" 
+            tick={{ fontSize: 12, angle: -45, textAnchor: 'end' }}
+            height={60} // Increase the height to accommodate angled labels
+          />
+          <YAxis 
+            label={{ 
+              value: 'Emissions (kg CO₂e)', 
+              angle: -90, 
+              position: 'insideLeft', 
+              style: { textAnchor: 'middle' } 
+            }} 
+          />
+          <Tooltip formatter={(value: number) => `${value.toFixed(2)} kg CO₂e`} />
+          <Legend 
+            verticalAlign="top" 
+            height={36} 
+            wrapperStyle={{ paddingBottom: 10 }}
+          />
+          <Bar dataKey="Your Event" fill="#1e6091" />
+          <Bar dataKey="Average" fill="#43a047" />
         </BarChart>
-      </ChartContainer>
+      </ResponsiveContainer>
     </div>
   );
 };
