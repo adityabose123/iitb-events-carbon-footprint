@@ -4,14 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEmission } from "@/context/EmissionContext";
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Leaf, Award, Car, TreeDeciduous, AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
-import { 
-  ChartContainer, 
-  ChartTooltip, 
-  ChartTooltipContent,
-  ChartLegend
-} from "@/components/ui/chart";
+import { Leaf, Award } from "lucide-react";
+import EmissionDistributionChart from "@/components/Results/EmissionDistributionChart";
+import EmissionCategoryChart from "@/components/Results/EmissionCategoryChart";
+import EmissionComparisonChart from "@/components/Results/EmissionComparisonChart";
+import EnvironmentalImpact from "@/components/Results/EnvironmentalImpact";
+import EmissionInsights from "@/components/Results/EmissionInsights";
 
 const ResultsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -184,9 +182,6 @@ const ResultsPage: React.FC = () => {
 
   const emissionImpact = calculateEmissionImpact();
 
-  // Colors for pie chart - using a more distinguishable color palette
-  const COLORS = ['#1e88e5', '#43a047', '#ffb300', '#e53935', '#5e35b1', '#00acc1', '#f4511e', '#6d4c41'];
-
   // Save event data when viewing results
   useEffect(() => {
     if (selectedClub) {
@@ -222,31 +217,7 @@ const ResultsPage: React.FC = () => {
             <CardTitle>Emission Distribution</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={true}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => 
-                      percent > 0.05 ? `${name}: ${(percent * 100).toFixed(0)}%` : ""
-                    }
-                    labelPosition={15}
-                  >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => `${value.toFixed(2)} kg CO₂e`} />
-                  <Legend layout="vertical" verticalAlign="middle" align="right" />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
+            <EmissionDistributionChart chartData={chartData} />
           </CardContent>
         </Card>
 
@@ -255,122 +226,23 @@ const ResultsPage: React.FC = () => {
             <CardTitle>Emission by Category</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  layout="vertical"
-                  margin={{
-                    top: 5,
-                    right: 30,
-                    left: 80,
-                    bottom: 5,
-                  }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis type="category" dataKey="name" />
-                  <Tooltip formatter={(value: number) => `${value.toFixed(2)} kg CO₂e`} />
-                  <Bar dataKey="value" fill="#1e6091" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <EmissionCategoryChart chartData={chartData} />
           </CardContent>
         </Card>
       </div>
 
-      <Card className="shadow-md bg-white">
-        <CardHeader>
-          <CardTitle>Environmental Impact Equivalents</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="flex items-center p-4 bg-blue-50 rounded-lg">
-              <Car className="h-12 w-12 text-blue-600 mr-4" />
-              <div>
-                <h3 className="text-xl font-semibold">Driving Equivalent</h3>
-                <p className="text-gray-700">
-                  These emissions are equivalent to driving a car for <span className="font-bold">{emissionImpact.drivingKm} kilometers</span>
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center p-4 bg-green-50 rounded-lg">
-              <TreeDeciduous className="h-12 w-12 text-green-600 mr-4" />
-              <div>
-                <h3 className="text-xl font-semibold">Carbon Absorption</h3>
-                <p className="text-gray-700">
-                  It would take <span className="font-bold">{emissionImpact.treeCount} trees</span> about a month to absorb this much carbon
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <EnvironmentalImpact emissionImpact={emissionImpact} />
 
-      {/* New Comparison Chart Section */}
       <Card className="shadow-md bg-white">
         <CardHeader>
           <CardTitle>Comparison with Average IIT Bombay Events</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-96">
-            <ChartContainer config={{
-              "Your Event": { color: "#1e6091" },
-              "Average": { color: "#43a047" }
-            }}>
-              <BarChart
-                data={comparisonData}
-                margin={{
-                  top: 20,
-                  right: 30,
-                  left: 20,
-                  bottom: 30,
-                }}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="category" />
-                <YAxis label={{ value: 'Emissions (kg CO₂e)', angle: -90, position: 'insideLeft' }} />
-                <ChartTooltip>
-                  <ChartTooltipContent />
-                </ChartTooltip>
-                <ChartLegend />
-                <Bar dataKey="Your Event" fill="var(--color-Your Event)" />
-                <Bar dataKey="Average" fill="var(--color-Average)" />
-              </BarChart>
-            </ChartContainer>
-          </div>
+          <EmissionComparisonChart comparisonData={comparisonData} />
         </CardContent>
       </Card>
 
-      {/* New Insights Section */}
-      {insights.length > 0 && (
-        <Card className="shadow-md bg-white">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Key Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {insights.map((insight, index) => (
-                <div key={index} className="flex items-start p-4 rounded-lg border border-gray-100">
-                  {insight.isHigher ? (
-                    <TrendingUp className="h-6 w-6 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
-                  ) : (
-                    <TrendingDown className="h-6 w-6 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
-                  )}
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900">{insight.category}</h3>
-                    <p className="text-gray-700">{insight.message}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <EmissionInsights insights={insights} />
 
       <div className="flex justify-between">
         <Button 
